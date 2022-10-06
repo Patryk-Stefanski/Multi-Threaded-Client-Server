@@ -1,3 +1,4 @@
+import java.awt.geom.Area;
 import java.io.*;
 import java.net.*;
 import java.awt.event.*;
@@ -30,6 +31,7 @@ public class Client extends JFrame {
         new Client();
     }
 
+    private static int studId;
 
     public Client() {
         loginView.getConfiguredView();
@@ -57,19 +59,28 @@ public class Client extends JFrame {
             // Create an output stream to send data to the server
             toServer = new DataOutputStream(socket.getOutputStream());
 
-            String connectionEstablished = fromServer.readUTF();
+            while (true) {
 
-            if (!connectionEstablished.equals("")) {
-                clientView.clientLogArea.append(connectionEstablished);
-            }
+                String readMessageType = fromServer.readUTF();
 
-            boolean authorisation = false;
-            while (!authorisation) {
-                authorisation = fromServer.readBoolean();
-                if (authorisation) {
-                    cv.remove(1);
-                    cv.addTab("Calculator", calcView.getConfiguredCalcView());
-                    calcView.getCalcButton().addActionListener(new calcListener());
+                if (readMessageType.contains("Message")) {
+                    clientView.clientLogArea.append(clientLogPrefix + fromServer.readUTF());
+                }
+
+                if (readMessageType.contains("Authentication")) {
+                    boolean authorised = fromServer.readBoolean();
+                    if (authorised) {
+                        cv.remove(1);
+                        cv.addTab("Calculator", calcView.getConfiguredCalcView());
+                        calcView.getCalcButton().addActionListener(new calcListener());
+                        clientView.clientLogArea.append(clientLogPrefix + "Successfully logged in student : " + studId + "\n");
+                    }
+                }
+
+                if (readMessageType.contains("Area")) {
+                    double area = fromServer.readDouble();
+                    calcView.areaTextArea.setText(String.valueOf(area));
+                    clientView.clientLogArea.append(clientLogPrefix + "Area value has been received from server : " + area + "\n");
                 }
             }
         } catch (IOException ex) {
@@ -80,17 +91,19 @@ public class Client extends JFrame {
     private class authListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent arg) {
-            if (loginView.loginField.getText() != null && Integer.parseInt(loginView.loginField.getText()) > -1) {
+            if (!loginView.loginField.getText().isEmpty() && loginView.loginField.getText().matches("[0-9]+")) {
                 clientView.clientLogArea.append(clientLogPrefix + "Trying to log in \n");
                 try {
-                    int sendStudId = Integer.parseInt(loginView.loginField.getText());
+                    studId = Integer.parseInt(loginView.loginField.getText());
+                    toServer.writeInt(studId);
 
-                    toServer.writeInt(sendStudId);
                 } catch (SecurityException e) {
                     System.err.println(e);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            } else {
+                clientView.clientLogArea.append(clientLogPrefix + "Username field is empty or the value is not a number \n");
             }
         }
     }
@@ -99,21 +112,19 @@ public class Client extends JFrame {
     private class calcListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent arg) {
-            clientView.clientLogArea.append(clientLogPrefix + "Calc button works \n");
-            if (calcView.radiusField.getText() != null && !Double.isNaN(Double.parseDouble(calcView.radiusField.getText()))) {
-                clientView.clientLogArea.append(clientLogPrefix + "Trying to Calculate  \n");
+            if (!calcView.radiusField.getText().isEmpty() && calcView.radiusField.getText().matches("(-?\\d*\\.?\\d+)")) {
                 try {
                     double sendMessage = Double.parseDouble(calcView.radiusField.getText());
-                    clientView.clientLogArea.append(clientLogPrefix + "Sending Radius to Server");
-
                     toServer.writeDouble(sendMessage);
 
-                    calcView.areaTextArea.setText(String.valueOf(fromServer.readDouble()));
+                    clientView.clientLogArea.append(clientLogPrefix + "Radius value sent to Server : " + sendMessage + " \n");
                 } catch (SecurityException e) {
                     System.err.println(e);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            } else {
+                clientView.clientLogArea.append(clientLogPrefix + "Radius field is empty or the value is not a number \n");
             }
         }
     }

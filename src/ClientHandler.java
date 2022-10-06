@@ -2,6 +2,7 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -16,7 +17,7 @@ public class ClientHandler extends Thread {
     private Boolean authorised = false;
 
 
-    //private int totReq;
+    private int totReq;
 
     private final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -48,18 +49,26 @@ public class ClientHandler extends Thread {
 
 
                         serverLogArea.append(handlerLogPrefix + "Attempting Client Authentication \n");
-                        ResultSet rs = st.executeQuery("SELECT * FROM `students`");
+                        String query = String.format("SELECT * FROM `students` WHERE `STUD_ID` = '%d'" , studId);
+                        ResultSet rs = st.executeQuery(query);
+
                         if (rs.next() && rs.getInt("STUD_ID") == studId) {
                             authorised = true;
                             serverLogArea.append(handlerLogPrefix + "Successfully Authenticated Student : " + studId + "\n");
+
+                            outputToClient.writeUTF("Authentication");
                             outputToClient.writeBoolean(true);
 
+                            totReq = rs.getInt("TOT_REQ") + 1;
+                            String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d'", totReq);
+                            st.executeUpdate(updateReqQuery);
+                            serverLogArea.append(handlerLogPrefix + "Student  : " + studId + " has a total of " + totReq + " login requests" + "\n");
 
-//                                totReq = rs.getInt("TOT_REQ") + 1;
-//                                String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d'", totReq);
-//                                st.executeUpdate(updateReqQuery);
-                            //serverView.serverLogArea.append("Student  : " + studId + "has a total of " + totReq + " requests" + "\n");
-
+                        } else  {
+                            serverLogArea.append(handlerLogPrefix + "Failed to authenticate Student : " + studId + "\n");
+                            //System.out.println("sending error message");
+                            outputToClient.writeUTF("Message");
+                            outputToClient.writeUTF("Sorry " + studId + ". You are not a registered student.Try again later or exit");
                         }
                         rs.close();
                         st.close();
@@ -80,6 +89,7 @@ public class ClientHandler extends Thread {
 
 
                         // Send area back to the client
+                        outputToClient.writeUTF("Area");
                         outputToClient.writeDouble(area);
                         serverLogArea.append(handlerLogPrefix + "Area Calculated: " + area + '\n');
 
