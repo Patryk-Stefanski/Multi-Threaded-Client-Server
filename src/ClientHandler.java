@@ -68,7 +68,7 @@ public class ClientHandler extends Thread {
                             serverLogArea.append(handlerLogPrefix + "Failed to authenticate Student : " + studId + "\n");
                             //System.out.println("sending error message");
                             outputToClient.writeUTF("Message");
-                            outputToClient.writeUTF("Sorry " + studId + ". You are not a registered student.Try again later or exit");
+                            outputToClient.writeUTF("Sorry " + studId + ". You are not a registered student.Try again later or exit \n");
                         }
                         rs.close();
                         st.close();
