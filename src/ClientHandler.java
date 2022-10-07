@@ -52,13 +52,16 @@ public class ClientHandler extends Thread {
                         String query = String.format("SELECT * FROM `students` WHERE `STUD_ID` = '%d'" , studId);
                         ResultSet rs = st.executeQuery(query);
 
+                        //Check the studentId is present in the database
                         if (rs.next() && rs.getInt("STUD_ID") == studId) {
                             authorised = true;
                             serverLogArea.append(handlerLogPrefix + "Successfully Authenticated Student : " + studId + "\n");
 
+                            //Notify client that account authentication has been successful
                             outputToClient.writeUTF("Authentication");
                             outputToClient.writeBoolean(true);
 
+                            //Update tot req of specific student
                             totReq = rs.getInt("TOT_REQ") + 1;
                             String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d'", totReq);
                             st.executeUpdate(updateReqQuery);
@@ -66,7 +69,7 @@ public class ClientHandler extends Thread {
 
                         } else  {
                             serverLogArea.append(handlerLogPrefix + "Failed to authenticate Student : " + studId + "\n");
-                            //System.out.println("sending error message");
+                            //Notify client that the student authentication failed
                             outputToClient.writeUTF("Message");
                             outputToClient.writeUTF("Sorry " + studId + ". You are not a registered student.Try again later or exit \n");
                         }
@@ -77,6 +80,7 @@ public class ClientHandler extends Thread {
                 }
 
                 if (authorised) {
+                    //If  student authenticated successfully then read in the radius value
                     double radius = inputFromClient.readDouble();
 
                     if (radius > -1) {

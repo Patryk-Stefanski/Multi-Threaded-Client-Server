@@ -34,6 +34,7 @@ public class Client extends JFrame {
     private static int studId;
 
     public Client() {
+        //Setup Client GUI
         loginView.getConfiguredView();
         clientView.getConfiguredClientView();
         JTabbedPane cv = clientView.getConfiguredClientView();
@@ -61,6 +62,8 @@ public class Client extends JFrame {
 
             while (true) {
 
+                //Read "header" message from server to determine what type of data is meant to be read next
+
                 String readMessageType = fromServer.readUTF();
 
                 if (readMessageType.contains("Message")) {
@@ -70,6 +73,7 @@ public class Client extends JFrame {
                 if (readMessageType.contains("Authentication")) {
                     boolean authorised = fromServer.readBoolean();
                     if (authorised) {
+                        //if user is logged in then remove login page and add the calculate page
                         cv.remove(1);
                         cv.addTab("Calculator", calcView.getConfiguredCalcView());
                         calcView.getCalcButton().addActionListener(new calcListener());
@@ -78,6 +82,7 @@ public class Client extends JFrame {
                 }
 
                 if (readMessageType.contains("Area")) {
+                    //populate area field with calculated value from client handler
                     double area = fromServer.readDouble();
                     calcView.areaTextArea.setText(String.valueOf(area));
                     clientView.clientLogArea.append(clientLogPrefix + "Area value has been received from server : " + area + "\n");
@@ -88,12 +93,15 @@ public class Client extends JFrame {
     }
 
 
+    //Listener for login button
     private class authListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent arg) {
+            // Check that loginfield is not empty and only contains numbers
             if (!loginView.loginField.getText().isEmpty() && loginView.loginField.getText().matches("[0-9]+")) {
                 clientView.clientLogArea.append(clientLogPrefix + "Trying to log in \n");
                 try {
+                    //Send student ID to server for authentication
                     studId = Integer.parseInt(loginView.loginField.getText());
                     toServer.writeInt(studId);
 
@@ -109,9 +117,11 @@ public class Client extends JFrame {
     }
 
 
+    //Listener for calculate button
     private class calcListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent arg) {
+            //Check that radius field is not empty and only contains numbers and decimals (double)
             if (!calcView.radiusField.getText().isEmpty() && calcView.radiusField.getText().matches("(-?\\d*\\.?\\d+)")) {
                 try {
                     double sendMessage = Double.parseDouble(calcView.radiusField.getText());

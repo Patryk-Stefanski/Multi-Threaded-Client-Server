@@ -43,6 +43,7 @@ public class Server extends JFrame {
 
                 serverView.serverLogArea.append(serverLogPrefix + "Server connected \n");
 
+                //Notify client that connection has been established
                 outputToClient.writeUTF("Message");
                 outputToClient.writeUTF("Connection established with Server : " + socket.getLocalAddress() + ":" + socket.getLocalPort() + "\n");
 
