@@ -63,7 +63,7 @@ public class ClientHandler extends Thread {
 
                             //Update tot req of specific student
                             totReq = rs.getInt("TOT_REQ") + 1;
-                            String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d'", totReq);
+                            String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d' WHERE `STUD_ID`= '%d'", totReq , studId);
                             st.executeUpdate(updateReqQuery);
                             serverLogArea.append(handlerLogPrefix + "Student  : " + studId + " has a total of " + totReq + " login requests" + "\n");
 
