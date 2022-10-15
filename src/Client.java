@@ -25,15 +25,15 @@ public class Client extends JFrame {
 
     private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-    private final String clientLogPrefix = date.format(timestamp) + " Client : ";
+    private String clientLogPrefix = date.format(timestamp) + " Client : ";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         new Client();
     }
 
     private static int studId;
 
-    public Client() {
+    public Client() throws UnknownHostException {
         //Setup Client GUI
         loginView.getConfiguredView();
         clientView.getConfiguredClientView();
@@ -49,6 +49,8 @@ public class Client extends JFrame {
         calcView.getConfiguredCalcView();
 
         loginView.loginButton.addActionListener(new authListener());
+
+        clientLogPrefix += InetAddress.getLocalHost().toString() + ":" ;
 
         try {
             // Create a socket to connect to the server

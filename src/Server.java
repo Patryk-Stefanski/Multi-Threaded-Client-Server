@@ -36,16 +36,16 @@ public class Server extends JFrame {
                 SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 String serverLogPrefix = date.format(timestamp) + " Server:";
-                serverLogPrefix += socket.getLocalAddress() + ":" + socket.getLocalPort() + " : ";
+                serverLogPrefix +=   socket.getLocalAddress() + ":" + socket.getLocalPort() + ":" + socket.getLocalAddress().getHostName() + " : ";
 
                 DataInputStream inputFromClient = new DataInputStream(socket.getInputStream());
                 DataOutputStream outputToClient = new DataOutputStream(socket.getOutputStream());
 
-                serverView.serverLogArea.append(serverLogPrefix + "Server connected \n");
+                serverView.serverLogArea.append(serverLogPrefix + "Client connected \n");
 
                 //Notify client that connection has been established
                 outputToClient.writeUTF("Message");
-                outputToClient.writeUTF("Connection established with Server : " + socket.getLocalAddress() + ":" + socket.getLocalPort() + "\n");
+                outputToClient.writeUTF("Connection established with Server : " + socket.getLocalAddress() + ":" + socket.getLocalPort() + " : " + socket.getLocalAddress().getHostName() + "\n");
 
 
                 serverView.serverLogArea.append(serverLogPrefix + "Starting new client handler \n");

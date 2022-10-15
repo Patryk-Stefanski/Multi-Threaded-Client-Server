@@ -49,7 +49,7 @@ public class ClientHandler extends Thread {
 
 
                         serverLogArea.append(handlerLogPrefix + "Attempting Client Authentication \n");
-                        String query = String.format("SELECT * FROM `students` WHERE `STUD_ID` = '%d'" , studId);
+                        String query = String.format("SELECT * FROM `students` WHERE `STUD_ID` = '%d'", studId);
                         ResultSet rs = st.executeQuery(query);
 
                         //Check the studentId is present in the database
@@ -63,11 +63,11 @@ public class ClientHandler extends Thread {
 
                             //Update tot req of specific student
                             totReq = rs.getInt("TOT_REQ") + 1;
-                            String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d' WHERE `STUD_ID`= '%d'", totReq , studId);
+                            String updateReqQuery = String.format("UPDATE `students` set `TOT_REQ`= '%d' WHERE `STUD_ID`= '%d'", totReq, studId);
                             st.executeUpdate(updateReqQuery);
                             serverLogArea.append(handlerLogPrefix + "Student  : " + studId + " has a total of " + totReq + " login requests" + "\n");
 
-                        } else  {
+                        } else {
                             serverLogArea.append(handlerLogPrefix + "Failed to authenticate Student : " + studId + "\n");
                             //Notify client that the student authentication failed
                             outputToClient.writeUTF("Message");
@@ -84,7 +84,7 @@ public class ClientHandler extends Thread {
                     double radius = inputFromClient.readDouble();
 
                     if (radius > -1) {
-                        double area = 0;
+                        double area ;
 
                         serverLogArea.append(handlerLogPrefix + "Radius received from client: " + radius + '\n');
 
